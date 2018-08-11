@@ -133,6 +133,7 @@ exports['General tests'] = {
                 data.release();
             }
         });
+
         mailparser.on('end', () => {
             test.ok(1, 'Parsing ended');
             test.done();
@@ -273,8 +274,7 @@ exports['General tests'] = {
 
 exports['Text encodings'] = {
     'Plaintext encoding: Default': test => {
-        let encodedText = [13, 10, 213, 196, 214, 220], // \r\nÕÄÖÜ
-            mail = Buffer.from(encodedText);
+        let mail = Buffer.from('\r\nÕÄÖÜ');
 
         test.expect(1);
 
@@ -561,7 +561,7 @@ exports['Attachment filename'] = {
                 'Content-Type: application/octet-stream\r\n' +
                 'Content-Transfer-Encoding: QUOTED-PRINTABLE\r\n' +
                 'Content-Disposition: attachment;\r\n' +
-                '    filename*0*=UTF-8\'\'%C3%95%C3%84;\r\n' +
+                '    filename*0*=UTF-8\x27\x27%C3%95%C3%84;\r\n' +
                 '    filename*1*=%C3%96%C3%9C\r\n' +
                 '\r\n' +
                 '=00=01=02=03=FD=FE=FF',
@@ -591,7 +591,7 @@ exports['Attachment filename'] = {
                 'Content-Type: application/octet-stream\r\n' +
                 'Content-Transfer-Encoding: QUOTED-PRINTABLE\r\n' +
                 'Content-Disposition: attachment;\r\n' +
-                '    filename*0*=UTF-8\'\'%C3%95%C3%84;\r\n' +
+                '    filename*0*=UTF-8\x27\x27%C3%95%C3%84;\r\n' +
                 '    filename*1*=%C3%96%C3%9C;\r\n' +
                 '    filename*2=.txt\r\n' +
                 '\r\n' +
@@ -671,7 +671,7 @@ exports['Attachment filename'] = {
     'Content-Type name*': test => {
         let encodedText =
                 'Content-Type: application/octet-stream;\r\n' +
-                '    name*=UTF-8\'\'%C3%95%C3%84%C3%96%C3%9C\r\n' +
+                '    name*=UTF-8\x27\x27%C3%95%C3%84%C3%96%C3%9C\r\n' +
                 'Content-Transfer-Encoding: QUOTED-PRINTABLE\r\n' +
                 '\r\n' +
                 '=00=01=02=03=FD=FE=FF',
@@ -699,7 +699,7 @@ exports['Attachment filename'] = {
     'Content-Type name*X*': test => {
         let encodedText =
                 'Content-Type: application/octet-stream;\r\n' +
-                '    name*0*=UTF-8\'\'%C3%95%C3%84;\r\n' +
+                '    name*0*=UTF-8\x27\x27%C3%95%C3%84;\r\n' +
                 '    name*1*=%C3%96%C3%9C\r\n' +
                 'Content-Transfer-Encoding: QUOTED-PRINTABLE\r\n' +
                 '\r\n' +
@@ -892,7 +892,19 @@ exports['Plaintext format'] = {
 
 exports['Transfer encoding'] = {
     'Quoted-Printable Default charset': test => {
-        let encodedText = 'Content-type: text/plain\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n=D5=C4=D6=DC',
+        let encodedText = 'Content-type: text/plain\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n=C3=95=C3=84=C3=96=C3=9C',
+            mail = Buffer.from(encodedText, 'utf-8');
+
+        let mailparser = new MailParser();
+        mailparser.end(mail);
+        mailparser.on('data', () => false);
+        mailparser.on('end', () => {
+            test.equal(mailparser.text, 'ÕÄÖÜ');
+            test.done();
+        });
+    },
+    'Quoted-Printable Win-1257': test => {
+        let encodedText = 'Content-type: text/plain; charset=windows-1257\r\nContent-Transfer-Encoding: QUOTED-PRINTABLE\r\n\r\n=D5=C4=D6=DC',
             mail = Buffer.from(encodedText, 'utf-8');
 
         let mailparser = new MailParser();
@@ -916,7 +928,19 @@ exports['Transfer encoding'] = {
         });
     },
     'Base64 Default charset': test => {
-        let encodedText = 'Content-type: text/plain\r\nContent-Transfer-Encoding: bAse64\r\n\r\n1cTW3A==',
+        let encodedText = 'Content-type: text/plain\r\nContent-Transfer-Encoding: bAse64\r\n\r\nw5XDhMOWw5w=',
+            mail = Buffer.from(encodedText, 'utf-8');
+
+        let mailparser = new MailParser();
+        mailparser.end(mail);
+        mailparser.on('data', () => false);
+        mailparser.on('end', () => {
+            test.equal(mailparser.text, 'ÕÄÖÜ');
+            test.done();
+        });
+    },
+    'Base64 Win-1257': test => {
+        let encodedText = 'Content-type: text/plain; charset=windows-1257\r\nContent-Transfer-Encoding: bAse64\r\n\r\n1cTW3A==',
             mail = Buffer.from(encodedText, 'utf-8');
 
         let mailparser = new MailParser();
@@ -954,6 +978,18 @@ exports['Transfer encoding'] = {
     },
     '8bit Default charset': test => {
         let encodedText = 'Content-type: text/plain\r\nContent-Transfer-Encoding: 8bit\r\n\r\nÕÄÖÜ',
+            mail = Buffer.from(encodedText, 'utf-8');
+
+        let mailparser = new MailParser();
+        mailparser.end(mail);
+        mailparser.on('data', () => false);
+        mailparser.on('end', () => {
+            test.equal(mailparser.text, 'ÕÄÖÜ');
+            test.done();
+        });
+    },
+    '8bit Win-1257': test => {
+        let encodedText = 'Content-type: text/plain; charset=win-1257\r\nContent-Transfer-Encoding: 8bit\r\n\r\nÕÄÖÜ',
             textmap = encodedText.split('').map(chr => chr.charCodeAt(0)),
             mail = Buffer.from(textmap);
 
