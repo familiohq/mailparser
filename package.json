@@ -23,7 +23,7 @@
         "iconv-lite": "0.6.3",
         "libmime": "5.3.5",
         "linkify-it": "5.0.0",
-        "mailsplit": "5.4.0",
+        "mailsplit": "git+https://github.com/familiohq/mailsplit.git",
         "nodemailer": "6.9.13",
         "punycode.js": "2.3.1",
         "tlds": "1.252.0"
