@@ -56,7 +56,7 @@ let processNext = () => {
 
     parser.on('end', () => {
         parser = false;
-        setImmediate(processNext);
+        setTimeout(processNext, 0);
     });
 
     parser.on('error', err => {

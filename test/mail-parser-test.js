@@ -37,8 +37,8 @@ exports['General tests'] = {
             let chunk = chunks.shift();
             if (chunk) {
                 mailparser.write(chunk, 'utf8');
-                if (typeof setImmediate === 'function') {
-                    setImmediate(writeNextChunk);
+                if (typeof setTimeout === 'function') {
+                    setTimeout(writeNextChunk, 0);
                 } else {
                     process.nextTick(writeNextChunk);
                 }
@@ -53,8 +53,8 @@ exports['General tests'] = {
             test.done();
         });
 
-        if (typeof setImmediate === 'function') {
-            setImmediate(writeNextChunk);
+        if (typeof setTimeout === 'function') {
+            setTimeout(writeNextChunk, 0);
         } else {
             process.nextTick(writeNextChunk);
         }

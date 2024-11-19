@@ -37,7 +37,7 @@ let processNext = () => {
 
     stream.on('end', () => {
         stream = false;
-        setImmediate(processNext);
+        setTimeout(processNext, 0);
     });
 
     randomMessage.get(messagesRoot, (processed * 0x10000).toString(16)).pipe(stream);
